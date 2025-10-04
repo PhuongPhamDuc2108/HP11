@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Đăng ký{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6 col-lg-5">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title mb-3">Tạo tài khoản</h5>
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {% for field in form %}
+            <div class="mb-3">
+              <label class="form-label" for="id_{{ field.name }}">{{ field.label }}</label>
+              {{ field }}
+              {% if field.errors %}
+                <div class="text-danger small">{{ field.errors|striptags }}</div>
+              {% endif %}
+            </div>
+          {% endfor %}
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-danger">Đăng ký</button>
+          </div>
+        </form>
+        <hr>
+        <div class="text-center small">Đã có tài khoản? <a href="{% url 'login' %}">Đăng nhập</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
