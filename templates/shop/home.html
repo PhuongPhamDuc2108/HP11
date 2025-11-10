@@ -1,6 +1,43 @@
 {% extends 'base.html' %}
 {% block title %}Trang chủ{% endblock %}
 {% block content %}
+<!-- Banner Carousel -->
+{% if banners %}
+<div id="bannerCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+  <div class="carousel-indicators">
+    {% for banner in banners %}
+      <button type="button" data-bs-target="#bannerCarousel" data-bs-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active" aria-current="true"{% endif %} aria-label="Slide {{ forloop.counter }}"></button>
+    {% endfor %}
+  </div>
+  <div class="carousel-inner">
+    {% for banner in banners %}
+      <div class="carousel-item {% if forloop.first %}active{% endif %}">
+        {% if banner.link %}
+          <a href="{{ banner.link }}" target="_blank">
+            <img src="{{ banner.image_url }}" class="d-block w-100" alt="{{ banner.title }}" style="height: 300px; object-fit: cover;">
+          </a>
+        {% else %}
+          <img src="{{ banner.image_url }}" class="d-block w-100" alt="{{ banner.title }}" style="height: 300px; object-fit: cover;">
+        {% endif %}
+        {% if banner.discount_info %}
+          <div class="carousel-caption d-none d-md-block">
+            <h5 class="bg-danger text-white px-2 py-1 rounded">{{ banner.discount_info }}</h5>
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+  <button class="carousel-control-prev" type="button" data-bs-target="#bannerCarousel" data-bs-slide="prev">
+    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Previous</span>
+  </button>
+  <button class="carousel-control-next" type="button" data-bs-target="#bannerCarousel" data-bs-slide="next">
+    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Next</span>
+  </button>
+</div>
+{% endif %}
+
 <div class="row g-3">
   <aside class="col-lg-3">
     <div class="card">
@@ -18,22 +55,99 @@
     </div>
   </aside>
   <section class="col-lg-9">
+    <!-- Categories grid like Shopee -->
+    <div class="card mb-3 categories-card">
+      <div class="card-body py-3">
+        <div class="row row-cols-3 row-cols-sm-4 row-cols-md-6 row-cols-lg-8 row-cols-xl-10 g-2 g-sm-3">
+          {% for c in categories_tiles %}
+            <div class="col">
+              <a href="/?cat={{ c.slug }}" class="text-decoration-none text-dark">
+                <div class="category-tile text-center p-2 h-100">
+                  <div class="category-thumb mx-auto mb-2">
+                    <img src="{{ c.image_url }}" alt="{{ c.name }}" class="object-fit-cover rounded-circle">
+                  </div>
+                  <div class="small category-name" title="{{ c.name }}">{{ c.name }}</div>
+                </div>
+              </a>
+            </div>
+          {% empty %}
+            <div class="col-12 small text-muted">Chưa có danh mục.</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Flash Sale Section (Shopee-like) -->
+    {% if flash_sale_products %}
+    <div class="card mb-4 flash-sale-card">
+      <div class="card-body py-3">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <div class="d-flex align-items-center gap-2">
+            <img src="https://cf.shopee.vn/file/sg-11134258-7qvd4-lk2v1ht3d2ef6c_tn" alt="Flash Sale" style="height:24px;">
+            <h5 class="mb-0 fw-bold text-uppercase" style="color:#ee4d2d;">Flash Sale</h5>
+            {% if flash_sale_ends_at %}
+              <div class="flash-countdown ms-2" data-ends="{{ flash_sale_ends_at|date:'c' }}">
+                <span class="cd-item">00</span>:
+                <span class="cd-item">00</span>:
+                <span class="cd-item">00</span>
+              </div>
+            {% endif %}
+          </div>
+          <a href="#flash-sale" class="text-decoration-none small">Xem tất cả</a>
+        </div>
+        <div id="flash-sale" class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-2 g-sm-3">
+          {% for p in flash_sale_products %}
+          <div class="col">
+            <a href="{% url 'product_detail' p.slug %}" class="text-decoration-none text-dark">
+              <div class="card h-100 flash-item">
+                <div class="ratio ratio-1x1 bg-light position-relative">
+                  {% if p.image_url %}
+                    <img src="{{ p.image_url }}" alt="{{ p.name }}" class="object-fit-cover">
+                  {% else %}
+                    <div class="d-flex align-items-center justify-content-center text-muted">No image</div>
+                  {% endif %}
+                  {% if p.flash_discount_percent %}
+                  <div class="flash-badge">-{{ p.flash_discount_percent }}%</div>
+                  {% endif %}
+                </div>
+                <div class="card-body p-2">
+                  <div class="small text-truncate" title="{{ p.name }}">{{ p.name }}</div>
+                  <div class="d-flex align-items-center gap-2 mt-1">
+                    <div class="price text-danger fw-bold">{{ p.flash_sale_price }} đ</div>
+                    <div class="text-muted text-decoration-line-through small">{{ p.price }} đ</div>
+                  </div>
+                  <div class="flash-progress mt-2">
+                    <div class="bar" style="width: 30%;"></div>
+                    <div class="label small">Vừa mở bán</div>
+                  </div>
+                </div>
+              </div>
+            </a>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
     <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
       {% for p in products %}
         <div class="col">
-          <div class="card h-100 product-card">
-            <div class="ratio ratio-1x1 bg-light">
-              {% if p.image_url %}
-                <img src="{{ p.image_url }}" alt="{{ p.name }}" class="object-fit-cover">
-              {% else %}
-                <div class="d-flex align-items-center justify-content-center text-muted">No image</div>
-              {% endif %}
+          <a href="{% url 'product_detail' p.slug %}" class="text-decoration-none text-dark">
+            <div class="card h-100 product-card">
+              <div class="ratio ratio-1x1 bg-light">
+                {% if p.image_url %}
+                  <img src="{{ p.image_url }}" alt="{{ p.name }}" class="object-fit-cover">
+                {% else %}
+                  <div class="d-flex align-items-center justify-content-center text-muted">No image</div>
+                {% endif %}
+              </div>
+              <div class="card-body">
+                <div class="product-title" title="{{ p.name }}">{{ p.name }}</div>
+                <div class="text-danger fw-bold">{{ p.price }} đ</div>
+              </div>
             </div>
-            <div class="card-body">
-              <div class="product-title" title="{{ p.name }}">{{ p.name }}</div>
-              <div class="text-danger fw-bold">{{ p.price }} đ</div>
-            </div>
-          </div>
+          </a>
         </div>
       {% empty %}
         <div class="col-12"><div class="alert alert-info">Chưa có sản phẩm nào. Vào Admin để thêm sản phẩm.</div></div>
@@ -41,4 +155,30 @@
     </div>
   </section>
 </div>
+
+{% block extra_scripts %}
+<script>
+(function(){
+  const el = document.querySelector('.flash-countdown');
+  if(!el) return;
+  const ends = new Date(el.getAttribute('data-ends'));
+  const items = el.querySelectorAll('.cd-item');
+  function pad(n){return n<10?'0'+n:n}
+  function tick(){
+    const now = new Date();
+    let diff = Math.max(0, ends - now);
+    const h = Math.floor(diff/3600000);
+    diff -= h*3600000;
+    const m = Math.floor(diff/60000);
+    diff -= m*60000;
+    const s = Math.floor(diff/1000);
+    items[0].textContent = pad(h);
+    items[1].textContent = pad(m);
+    items[2].textContent = pad(s);
+  }
+  tick();
+  setInterval(tick, 1000);
+})();
+</script>
+{% endblock %}
 {% endblock %}

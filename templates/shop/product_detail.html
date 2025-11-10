@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% block title %}{{ product.name }} | Chi tiết sản phẩm{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+    {% if product.category %}
+      <li class="breadcrumb-item"><a href="/?cat={{ product.category.slug }}">{{ product.category.name }}</a></li>
+    {% endif %}
+    <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+  </ol>
+</nav>
+
+<div class="product-detail card p-3">
+  <div class="row g-4 align-items-start">
+    <div class="col-md-5">
+      <div class="ratio ratio-1x1 bg-white border rounded overflow-hidden">
+        {% if product.image_url %}
+          <img src="{{ product.image_url }}" alt="{{ product.name }}" class="object-fit-cover">
+        {% else %}
+          <div class="d-flex align-items-center justify-content-center text-muted">No image</div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="col-md-7">
+      <h1 class="h5 product-name mb-2">{{ product.name }}</h1>
+      <div class="d-flex align-items-center text-muted small gap-3 mb-3">
+        <span><i class="bi bi-star-fill text-warning"></i> 4.9 <span class="ms-1">(999+ đánh giá)</span></span>
+        <span class="vr"></span>
+        <span>Đã bán 1.2k</span>
+      </div>
+
+      <div class="product-price p-3 rounded mb-3">
+        <div class="d-flex align-items-baseline gap-3">
+          <span class="text-danger fw-bold fs-3">{{ product.price }} đ</span>
+          <span class="text-muted text-decoration-line-through">{{ product.price|floatformat:0|add:20000 }} đ</span>
+          <span class="badge bg-danger-subtle text-danger">Giảm 10%</span>
+        </div>
+      </div>
+
+      <div class="mb-3 text-muted small">
+        <i class="bi bi-truck"></i> Miễn phí vận chuyển cho đơn từ 50k (mô phỏng)
+      </div>
+
+      {% if product.color_options %}
+      <div class="mb-3">
+        <div class="text-muted mb-2">Màu sắc</div>
+        <div class="d-flex flex-wrap gap-2">
+          {% for c in product.color_list %}
+            <span class="badge rounded-pill text-bg-light border">{{ c }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="d-flex align-items-center gap-3 mb-4">
+        <div class="text-muted">Số lượng</div>
+        <div class="input-group" style="width: 140px;">
+          <button class="btn btn-outline-secondary" type="button" onclick="var i=document.getElementById('qty'); if(i.value>1) i.value--">-</button>
+          <input id="qty" type="number" class="form-control text-center" value="1" min="1" max="{{ product.stock|default:99 }}">
+          <button class="btn btn-outline-secondary" type="button" onclick="var i=document.getElementById('qty'); i.value++">+</button>
+        </div>
+        {% if product.stock > 0 %}
+          <span class="text-success small">Còn hàng ({{ product.stock }})</span>
+        {% else %}
+          <span class="text-danger small">Hết hàng</span>
+        {% endif %}
+      </div>
+
+      <div class="d-flex flex-wrap gap-3">
+        <a class="btn btn-danger px-4" href="#" onclick="alert('Tính năng giỏ hàng sẽ được bổ sung.'); return false;"><i class="bi bi-cart3 me-2"></i>Thêm vào giỏ</a>
+        <a class="btn btn-outline-danger px-4" href="#" onclick="alert('Tính năng mua ngay sẽ được bổ sung.'); return false;">Mua ngay</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card mt-4">
+  <div class="card-header fw-bold">Mô tả sản phẩm</div>
+  <div class="card-body">
+    {% if product.description %}
+      <div class="product-description">{{ product.description|linebreaks }}</div>
+    {% else %}
+      <div class="text-muted">Chưa có mô tả cho sản phẩm này.</div>
+    {% endif %}
+  </div>
+</div>
+
+{% if product.specifications %}
+<div class="card mt-3">
+  <div class="card-header fw-bold">Thông số kỹ thuật</div>
+  <div class="card-body">
+    <pre class="m-0" style="white-space: pre-wrap;">{{ product.specifications }}</pre>
+  </div>
+</div>
+{% endif %}
+
+{% if related_products %}
+  <div class="mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h2 class="h6 m-0">Sản phẩm tương tự</h2>
+      <a href="/" class="small text-decoration-none">Xem thêm</a>
+    </div>
+    <div class="row row-cols-2 row-cols-md-4 row-cols-lg-6 g-3">
+      {% for p in related_products %}
+        <div class="col">
+          <a href="{% url 'product_detail' p.slug %}" class="text-decoration-none text-dark">
+            <div class="card h-100 product-card">
+              <div class="ratio ratio-1x1 bg-light">
+                {% if p.image_url %}
+                  <img src="{{ p.image_url }}" alt="{{ p.name }}" class="object-fit-cover">
+                {% else %}
+                  <div class="d-flex align-items-center justify-content-center text-muted">No image</div>
+                {% endif %}
+              </div>
+              <div class="card-body">
+                <div class="product-title" title="{{ p.name }}">{{ p.name }}</div>
+                <div class="text-danger fw-bold">{{ p.price }} đ</div>
+              </div>
+            </div>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}
+{% endblock %}
