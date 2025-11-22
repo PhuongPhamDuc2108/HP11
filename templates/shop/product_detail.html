@@ -32,9 +32,15 @@
 
       <div class="product-price p-3 rounded mb-3">
         <div class="d-flex align-items-baseline gap-3">
-          <span class="text-danger fw-bold fs-3">{{ product.price }} đ</span>
-          <span class="text-muted text-decoration-line-through">{{ product.price|floatformat:0|add:20000 }} đ</span>
-          <span class="badge bg-danger-subtle text-danger">Giảm 10%</span>
+          {% if product.is_in_flash_sale and product.flash_sale_price %}
+            <span class="text-danger fw-bold fs-3">{{ product.flash_sale_price }} đ</span>
+            <span class="text-muted text-decoration-line-through">{{ product.price }} đ</span>
+            {% if product.flash_discount_percent %}
+              <span class="badge bg-danger-subtle text-danger">-{{ product.flash_discount_percent }}%</span>
+            {% endif %}
+          {% else %}
+            <span class="text-danger fw-bold fs-3">{{ product.price }} đ</span>
+          {% endif %}
         </div>
       </div>
 
@@ -67,10 +73,21 @@
         {% endif %}
       </div>
 
-      <div class="d-flex flex-wrap gap-3">
-        <a class="btn btn-danger px-4" href="#" onclick="alert('Tính năng giỏ hàng sẽ được bổ sung.'); return false;"><i class="bi bi-cart3 me-2"></i>Thêm vào giỏ</a>
-        <a class="btn btn-outline-danger px-4" href="#" onclick="alert('Tính năng mua ngay sẽ được bổ sung.'); return false;">Mua ngay</a>
-      </div>
+      <form class="d-flex flex-wrap gap-3" action="{% url 'add_to_cart' product.id %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="qty" id="qty-hidden" value="1">
+        <input type="hidden" name="next" value="{% url 'cart_view' %}">
+        {% if product.stock|default:0 > 0 %}
+          <button class="btn btn-danger px-4" type="submit" onclick="document.getElementById('qty-hidden').value = document.getElementById('qty').value">
+            <i class="bi bi-cart3 me-2"></i>Thêm vào giỏ
+          </button>
+          <button class="btn btn-outline-danger px-4" type="submit" onclick="document.getElementById('qty-hidden').value = document.getElementById('qty').value">Mua ngay</button>
+        {% else %}
+          <button class="btn btn-danger px-4" type="button" disabled>
+            <i class="bi bi-cart3 me-2"></i>Hết hàng
+          </button>
+        {% endif %}
+      </form>
     </div>
   </div>
 </div>

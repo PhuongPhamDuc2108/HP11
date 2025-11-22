@@ -6,6 +6,8 @@ from shop import views as shop_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    # Override default logout to accept GET and POST
+    path('accounts/logout/', shop_views.logout_view, name='logout'),
     path('accounts/', include('django.contrib.auth.urls')),
     path('accounts/register/', shop_views.register_view, name='register'),
     path('', include('shop.urls')),

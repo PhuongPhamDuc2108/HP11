@@ -24,7 +24,15 @@
             </form>
             <ul class="navbar-nav mb-2 mb-lg-0">
               <li class="nav-item me-3">
-                <a class="nav-link position-relative" href="#"><i class="bi bi-cart3 fs-5"></i></a>
+                <a class="nav-link position-relative" href="{% url 'cart_view' %}">
+                  <i class="bi bi-cart3 fs-5"></i>
+                  {% if cart_count and cart_count > 0 %}
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                      {{ cart_count }}
+                      <span class="visually-hidden">sản phẩm trong giỏ</span>
+                    </span>
+                  {% endif %}
+                </a>
               </li>
               {% if user.is_authenticated %}
                 <li class="nav-item dropdown">
@@ -34,7 +42,12 @@
                   <ul class="dropdown-menu dropdown-menu-end">
                     <li><a class="dropdown-item" href="/admin/" target="_blank">Trang quản trị</a></li>
                     <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="{% url 'logout' %}">Đăng xuất</a></li>
+                    <li>
+                      <form action="{% url 'logout' %}" method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="dropdown-item">Đăng xuất</button>
+                      </form>
+                    </li>
                   </ul>
                 </li>
               {% else %}
