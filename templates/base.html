@@ -78,7 +78,133 @@
       </div>
     </footer>
 
+    <!-- Floating Chatbot Button -->
+    <button id="chatbotToggle" type="button" class="btn btn-danger shadow-lg rounded-circle position-fixed" style="right: 20px; bottom: 20px; width: 56px; height: 56px; z-index: 1050;">
+      <i class="bi bi-chat-dots"></i>
+    </button>
+
+    <!-- Offcanvas Chatbot Panel -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="chatbotCanvas" aria-labelledby="chatbotCanvasLabel">
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="chatbotCanvasLabel">Trợ lý mua sắm</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body d-flex flex-column" style="height: 100%;">
+        <div id="chatMessages" class="flex-grow-1 border rounded p-2 mb-2 overflow-auto bg-light" style="min-height: 280px;">
+          <div class="text-muted small">Xin chào! Tôi có thể giúp gì cho bạn? Hãy đặt câu hỏi về sản phẩm, giá, tồn kho, flash sale...</div>
+        </div>
+        <form id="chatForm" class="d-flex gap-2" autocomplete="off">
+          <input id="chatInput" class="form-control" type="text" placeholder="Nhập câu hỏi..." />
+          <button id="chatSend" class="btn btn-danger" type="submit">
+            <span class="send-text">Gửi</span>
+            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+          </button>
+        </form>
+      </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      (function() {
+        const toggleBtn = document.getElementById('chatbotToggle');
+        const canvasEl = document.getElementById('chatbotCanvas');
+        const chatMessages = document.getElementById('chatMessages');
+        const chatForm = document.getElementById('chatForm');
+        const chatInput = document.getElementById('chatInput');
+        const sendBtn = document.getElementById('chatSend');
+        const spinner = sendBtn.querySelector('.spinner-border');
+        const sendText = sendBtn.querySelector('.send-text');
+
+        let offcanvasInstance = null;
+        let history = [];
+
+        function getCookie(name) {
+          let cookieValue = null;
+          if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+              const cookie = cookies[i].trim();
+              if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+              }
+            }
+          }
+          return cookieValue;
+        }
+        const csrftoken = getCookie('csrftoken');
+
+        function ensureOffcanvas() {
+          if (!offcanvasInstance) {
+            offcanvasInstance = new bootstrap.Offcanvas(canvasEl);
+          }
+          return offcanvasInstance;
+        }
+
+        function scrollToBottom() {
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function appendMessage(role, text) {
+          const wrap = document.createElement('div');
+          wrap.className = role === 'user' ? 'text-end my-2' : 'text-start my-2';
+          const bubble = document.createElement('div');
+          bubble.className = role === 'user' ? 'd-inline-block bg-danger text-white p-2 rounded-3' : 'd-inline-block bg-white border p-2 rounded-3';
+          bubble.style.maxWidth = '80%';
+          bubble.innerText = text;
+          wrap.appendChild(bubble);
+          chatMessages.appendChild(wrap);
+          scrollToBottom();
+        }
+
+        function setLoading(loading) {
+          chatInput.disabled = loading;
+          sendBtn.disabled = loading;
+          spinner.classList.toggle('d-none', !loading);
+          sendText.classList.toggle('d-none', loading);
+        }
+
+        toggleBtn.addEventListener('click', function() {
+          ensureOffcanvas().toggle();
+          setTimeout(() => chatInput.focus(), 300);
+        });
+
+        chatForm.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          const msg = chatInput.value.trim();
+          if (!msg) return;
+
+          appendMessage('user', msg);
+          chatInput.value = '';
+          setLoading(true);
+
+          try {
+            const res = await fetch('{% url "chat_api" %}', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken || ''
+              },
+              body: JSON.stringify({ message: msg, history: history })
+            });
+            let replyText = '';
+            if (res.ok) {
+              const data = await res.json();
+              replyText = data.reply || '';
+            } else {
+              replyText = 'Xin lỗi, server gặp lỗi khi gọi trợ lý. Hãy thử lại sau.';
+            }
+            appendMessage('assistant', replyText);
+            history.push({ role: 'user', content: msg });
+            history.push({ role: 'assistant', content: replyText });
+          } catch (err) {
+            appendMessage('assistant', 'Không thể kết nối đến máy chủ. Kiểm tra mạng và thử lại.');
+          } finally {
+            setLoading(false);
+          }
+        });
+      })();
+    </script>
     {% block extra_scripts %}{% endblock %}
   </body>
 </html>

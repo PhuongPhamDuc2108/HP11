@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}Thanh toán{% endblock %}
+{% block content %}
+<h1 class="h5 mb-4">Thanh toán</h1>
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card shadow-sm">
+      <div class="card-header bg-white fw-semibold">Thông tin nhận hàng</div>
+      <div class="card-body">
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label">{{ form.customer_name.label }}</label>
+            {{ form.customer_name }}
+            {% if form.customer_name.errors %}
+              <div class="text-danger small">{{ form.customer_name.errors|striptags }}</div>
+            {% endif %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">{{ form.phone.label }}</label>
+            {{ form.phone }}
+            {% if form.phone.errors %}
+              <div class="text-danger small">{{ form.phone.errors|striptags }}</div>
+            {% endif %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">{{ form.address.label }}</label>
+            {{ form.address }}
+            {% if form.address.errors %}
+              <div class="text-danger small">{{ form.address.errors|striptags }}</div>
+            {% endif %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">{{ form.payment_method.label }}</label>
+            {{ form.payment_method }}
+          </div>
+          <div class="d-flex gap-2">
+            <a href="{% url 'cart_view' %}" class="btn btn-outline-secondary">Quay lại giỏ hàng</a>
+            <button type="submit" class="btn btn-danger">Đặt hàng</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card shadow-sm">
+      <div class="card-header bg-white fw-semibold">Đơn hàng của bạn</div>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+          {% for it in items %}
+          <li class="list-group-item d-flex justify-content-between align-items-start">
+            <div class="me-2" style="width:56px;height:56px;">
+              {% if it.product.image_url %}
+                <img src="{{ it.product.image_url }}" alt="{{ it.product.name }}" class="img-fluid rounded" style="object-fit:cover;width:56px;height:56px;">
+              {% endif %}
+            </div>
+            <div class="flex-grow-1">
+              <div class="fw-semibold">{{ it.product.name }}</div>
+              <div class="text-muted small">SL: {{ it.qty }}</div>
+            </div>
+            <div class="text-danger fw-semibold">{{ it.subtotal }} đ</div>
+          </li>
+          {% endfor %}
+        </ul>
+        <div class="d-flex justify-content-between align-items-center mt-3">
+          <div class="fw-semibold">Tổng cộng</div>
+          <div class="h5 text-danger mb-0">{{ total }} đ</div>
+        </div>
+        <div class="small text-muted mt-2">
+          Phí vận chuyển sẽ được tính theo chính sách của cửa hàng (nếu có).
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

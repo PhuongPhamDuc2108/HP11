@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Category, Product, Banner
+from .models import Category, Product, Banner, Order, OrderItem
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -53,3 +53,15 @@ class BannerAdmin(admin.ModelAdmin):
             return format_html('<img src="{}" style="height:64px;width:120px;object-fit:cover;border-radius:4px;"/>', obj.image_url)
         return '(no image)'
     image_preview.short_description = 'Ảnh banner'
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ('id', 'customer_name', 'phone', 'total_amount', 'payment_method', 'status', 'created_at')
+    list_filter = ('status', 'payment_method')
+    search_fields = ('customer_name', 'phone', 'address')
+    readonly_fields = ('created_at',)
+
+@admin.register(OrderItem)
+class OrderItemAdmin(admin.ModelAdmin):
+    list_display = ('order', 'product_name', 'quantity', 'unit_price', 'line_total')
+    search_fields = ('product_name',)

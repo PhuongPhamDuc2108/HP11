@@ -82,3 +82,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'login'
 LOGIN_URL = 'login'
+
+# Gemini API Key (set environment variable GEMINI_API_KEY)
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')
